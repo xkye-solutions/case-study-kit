@@ -1,0 +1,76 @@
+---
+// PROTOTYPE: the chapters column plus the sticky Prototype that follows the reader.
+// Any element inside with [data-goto] drives the Prototype when it reaches mid-viewport;
+// any .try[data-goto] button re-drives it on click.
+import PrototypeFrame from './PrototypeFrame.astro';
+interface Props {
+  prototype: string; // URL of the standalone Prototype page
+  messageType: string; // e.g. "renigo:goto"; the Prototype listens for it
+  title: string; // iframe title
+  caption?: string;
+}
+const { prototype, messageType, title, caption = "Live prototype. Tap around, it's interactive." } = Astro.props;
+---
+<main class="wrap story" data-message-type={messageType}>
+  <div class="chapters">
+    <slot />
+  </div>
+  <aside class="stage" aria-label="Live prototype">
+    <PrototypeFrame src={prototype} title={title} sticky />
+    <div class="stage-caption"><span class="live"></span> {caption}</div>
+  </aside>
+</main>
+
+<script>
+  const story = document.querySelector<HTMLElement>('main.story')!;
+  const type = story.dataset.messageType;
+  const frame = document.getElementById('proto') as HTMLIFrameElement;
+  const holder = document.getElementById('phoneHolder')!;
+  let last = '';
+
+  function goto(json?: string) {
+    if (!json || json === last) return;
+    last = json;
+    frame.contentWindow?.postMessage({ type, ...JSON.parse(json) }, '*');
+  }
+
+  // Scale the sticky phone to fit the viewport height
+  function fit() {
+    // The phone itself is 844px tall inside a 940px frame that leaves room for its shadow
+    const s = Math.min(1, (window.innerHeight - 64 - 40) / 900);
+    holder.style.transform = `scale(${s})`;
+    holder.style.margin = `${-(940 * (1 - s)) / 2}px ${-(480 * (1 - s)) / 2}px`;
+  }
+  fit(); addEventListener('resize', fit);
+
+  // Scale the inline phone (narrow screens) to the column width so it never overflows
+  const inlineHolder = document.querySelector<HTMLElement>('.inline-phone .phone-holder');
+  function fitInline() {
+    if (!inlineHolder) return;
+    const cw = inlineHolder.parentElement!.clientWidth;
+    if (!cw) return;
+    const s = Math.min(.85, cw / 480);
+    inlineHolder.style.transform = `scale(${s})`;
+    inlineHolder.style.margin = `${-(940 * (1 - s)) / 2}px ${-(480 * (1 - s)) / 2}px`;
+  }
+  fitInline(); addEventListener('resize', fitInline);
+
+  // Drive the phone from whichever chapter sits in the middle of the viewport
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) goto((e.target as HTMLElement).dataset.goto); });
+  }, { rootMargin: '-45% 0px -45% 0px' });
+  story.querySelectorAll('section.chapter[data-goto]').forEach(s => io.observe(s));
+  // If the iframe finishes loading after a chapter is already active, replay it
+  frame.addEventListener('load', () => { const j = last; last = ''; goto(j); });
+
+  // "Try it" buttons always re-trigger, even if the chapter is already active
+  story.querySelectorAll<HTMLElement>('.try').forEach(b => b.addEventListener('click', () => {
+    last = '';
+    goto(b.dataset.goto);
+    if (getComputedStyle(story.querySelector('.stage')!).display === 'none') {
+      const inline = story.querySelector<HTMLIFrameElement>('.inline-phone iframe')!;
+      inline.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      inline.contentWindow?.postMessage({ type, ...JSON.parse(b.dataset.goto!) }, '*');
+    }
+  }));
+</script>

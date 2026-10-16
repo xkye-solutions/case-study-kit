@@ -1,0 +1,8 @@
+---
+// PROTOTYPE: the phone-sized iframe. `sticky` is the one beside the chapters; otherwise it's the inline copy for narrow screens.
+interface Props { src: string; title: string; sticky?: boolean }
+const { src, title, sticky = false } = Astro.props;
+---
+{sticky
+  ? <div class="phone-holder" id="phoneHolder"><iframe id="proto" src={src} title={title}></iframe></div>
+  : <div class="inline-phone"><div class="phone-holder"><iframe src={src} title={title} loading="lazy"></iframe></div></div>}

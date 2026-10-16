@@ -1,0 +1,13 @@
+---
+// PROTOTYPE: the Xkye frame around a project-branded Case Study. Styled only with @xkye/brand tokens, scoped here.
+import '@xkye/brand/tokens.css';
+import mark from '@xkye/brand/assets/xkye-mark.svg?url';
+---
+<a class="xkye-credit" href="https://xkye.solutions/">
+  <img src={mark} alt="" width="20" height="20" />
+  <span>A case study by <strong>Xkye Solutions</strong></span>
+</a>
+<style>
+  .xkye-credit { display: inline-flex; align-items: center; gap: 8px; font: 500 13px/1 var(--xkye-font-sans); color: var(--xkye-navy); text-decoration: none; }
+  .xkye-credit strong { font-weight: 600; }
+</style>

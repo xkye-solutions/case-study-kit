@@ -1,0 +1,5 @@
+---
+interface Props { goto: Record<string, unknown>; icon?: string }
+const { goto, icon = 'hand-finger' } = Astro.props;
+---
+<button class="try" data-goto={JSON.stringify(goto)}><i class={`ti ti-${icon}`}></i> <slot /></button>

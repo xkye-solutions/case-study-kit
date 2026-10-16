@@ -1,0 +1,28 @@
+---
+// PROTOTYPE: a "key flow" chapter rendered from a content-collection entry (see schema.ts).
+import Chapter from './Chapter.astro';
+import TryButton from './TryButton.astro';
+import { render } from 'astro:content';
+const { entry } = Astro.props;
+const f = entry.data;
+const { Content } = await render(entry);
+---
+<Chapter num={f.num} goto={f.goto}>
+  <div class="flow-head"><div class="ic"><i class={`ti ti-${f.icon}`}></i></div><h2 style="margin:0">{f.title}</h2></div>
+  <div class="flow-body"><Content /></div>
+  {f.before && f.after && (
+    <div class="before-after">
+      <div class="b"><small>Before</small>{f.before}</div>
+      <div class="a"><small>After</small>{f.after}</div>
+    </div>
+  )}
+  {f.decisions.length > 0 && (
+    <ul class="decisions">
+      {f.decisions.map((d) => <li><i class="ti ti-circle-check"></i><span><b>{d.lead}</b>{d.text}</span></li>)}
+    </ul>
+  )}
+  {f.try && <TryButton goto={f.goto}>{f.try}</TryButton>}
+</Chapter>
+<style>
+  .flow-body :global(> p:first-child) { margin-top: 18px; }
+</style>

@@ -1,0 +1,35 @@
+---
+// PROTOTYPE: page shell shared by every Case Study. The project brings its own styles, fonts and nav.
+interface Props {
+  title: string;
+  description: string;
+  site: string; // absolute, with trailing slash
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImage?: string; // path relative to site
+}
+const { title, description, site, ogTitle = title, ogDescription = description, ogImage } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="icon" href="assets/brand/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="assets/brand/favicon.ico" sizes="any" />
+<link rel="apple-touch-icon" href="assets/brand/apple-touch-icon.png" />
+<meta property="og:title" content={ogTitle} />
+<meta property="og:description" content={ogDescription} />
+{ogImage && <meta property="og:image" content={new URL(ogImage, site).href} />}
+<meta property="og:url" content={site} />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="canonical" href={site} />
+<slot name="head" />
+</head>
+<body>
+<slot />
+</body>
+</html>

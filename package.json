@@ -1,5 +1,22 @@
 {
   "name": "@xkye/case-study-kit",
   "version": "0.0.0",
-  "private": true
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./CaseStudy.astro": "./src/CaseStudy.astro",
+    "./Story.astro": "./src/Story.astro",
+    "./Chapter.astro": "./src/Chapter.astro",
+    "./FlowChapter.astro": "./src/FlowChapter.astro",
+    "./PrototypeFrame.astro": "./src/PrototypeFrame.astro",
+    "./TryButton.astro": "./src/TryButton.astro",
+    "./XkyeCredit.astro": "./src/XkyeCredit.astro",
+    "./schema": "./src/schema.ts"
+  },
+  "dependencies": {
+    "@xkye/brand": "workspace:*"
+  },
+  "peerDependencies": {
+    "astro": "^7.4.0"
+  }
 }
