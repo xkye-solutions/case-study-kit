@@ -1,5 +1,8 @@
 ---
-// PROTOTYPE: page shell shared by every Case Study. The project brings its own styles, fonts and nav.
+// Page shell shared by every Case Study. The project brings its own styles, fonts and nav.
+// The footer always ends with the Xkye credit; the project fills the rest through the `footer` slot.
+import XkyeCredit from './XkyeCredit.astro';
+import { creditText } from './credit';
 interface Props {
   title: string;
   description: string;
@@ -9,6 +12,8 @@ interface Props {
   ogImage?: string; // path relative to site
 }
 const { title, description, site, ogTitle = title, ogDescription = description, ogImage } = Astro.props;
+// Montserrat is only for the credit, so load just the glyphs it uses.
+const creditFont = `https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600&text=${encodeURIComponent(creditText)}&display=swap`;
 ---
 <!doctype html>
 <html lang="en">
@@ -27,9 +32,18 @@ const { title, description, site, ogTitle = title, ogDescription = description, 
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary_large_image" />
 <link rel="canonical" href={site} />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href={creditFont} rel="stylesheet" />
 <slot name="head" />
 </head>
 <body>
 <slot />
+<footer>
+  <div class="wrap">
+    <slot name="footer" />
+    <XkyeCredit />
+  </div>
+</footer>
 </body>
 </html>

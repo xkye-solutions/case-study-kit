@@ -1,4 +1,4 @@
-// PROTOTYPE: the shape a flow chapter's frontmatter takes in every Case Study.
+// the shape a flow chapter's frontmatter takes in every Case Study.
 import { z } from 'astro/zod';
 
 /** Where the Prototype should go when this chapter is in view. Passed through to the Prototype as-is. */

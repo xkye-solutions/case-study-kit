@@ -10,7 +10,6 @@
     "./FlowChapter.astro": "./src/FlowChapter.astro",
     "./PrototypeFrame.astro": "./src/PrototypeFrame.astro",
     "./TryButton.astro": "./src/TryButton.astro",
-    "./XkyeCredit.astro": "./src/XkyeCredit.astro",
     "./schema": "./src/schema.ts"
   },
   "dependencies": {
