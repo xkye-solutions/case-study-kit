@@ -10,6 +10,9 @@
     "./FlowChapter.astro": "./src/FlowChapter.astro",
     "./PrototypeFrame.astro": "./src/PrototypeFrame.astro",
     "./TryButton.astro": "./src/TryButton.astro",
+    "./Tries.astro": "./src/Tries.astro",
+    "./BeforeAfter.astro": "./src/BeforeAfter.astro",
+    "./Decisions.astro": "./src/Decisions.astro",
     "./schema": "./src/schema.ts"
   },
   "dependencies": {

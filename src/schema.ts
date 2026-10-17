@@ -1,4 +1,4 @@
-// the shape a flow chapter's frontmatter takes in every Case Study.
+// the shape a flow chapter's frontmatter takes in every Case Study. Its body is free MDX.
 import { z } from 'astro/zod';
 
 /** Where the Prototype should go when this chapter is in view. Passed through to the Prototype as-is. */
@@ -10,8 +10,4 @@ export const flowSchema = z.object({
   title: z.string(),
   icon: z.string(),
   goto,
-  before: z.string().optional(),
-  after: z.string().optional(),
-  decisions: z.array(z.object({ lead: z.string(), text: z.string() })).default([]),
-  try: z.string().optional(),
 });

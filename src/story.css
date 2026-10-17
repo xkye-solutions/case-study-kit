@@ -1,0 +1,45 @@
+/*
+ * The story layout every Case Study shares: columns, the sticky stage, both device frames and the switch to the
+ * inline copy on narrow screens. Structure only. Colour and type come from the project; the desktop title bar takes
+ * --cs-bar-bg, --cs-bar-fg, --cs-bar-strong, --cs-mono and --cs-window-shadow.
+ */
+.story { display: grid; }
+.story[data-device="phone"] { grid-template-columns: minmax(0, 1fr) 440px; gap: 56px; }
+.story[data-device="desktop"] { grid-template-columns: clamp(364px, 27vw, 420px) minmax(0, 1fr); gap: clamp(48px, 4vw, 64px); }
+
+.stage { position: sticky; top: 64px; height: calc(100vh - 64px); display: flex; flex-direction: column; align-items: center; }
+.story[data-device="phone"] .stage { justify-content: center; }
+.story[data-device="desktop"] .stage { justify-content: flex-start; padding: 88px 0 24px; }
+.stage-caption { display: flex; align-items: center; gap: 8px; }
+.story[data-device="phone"] .stage-caption { margin-top: -4px; }
+.story[data-device="desktop"] .stage-caption { margin-top: 14px; }
+.stage-caption .live { width: 8px; height: 8px; border-radius: 50%; background: #2bb15c; box-shadow: 0 0 0 4px rgba(43,177,92,.18); }
+
+/* Phone */
+.phone-holder { width: 480px; height: 940px; transform-origin: center; flex-shrink: 0; }
+.phone-holder iframe { width: 480px; height: 940px; border: 0; background: transparent; }
+
+/* Desktop window */
+.window { border-radius: 12px; overflow: hidden; background: #fff; box-shadow: var(--cs-window-shadow, 0 0 0 1px rgba(0,0,0,.08), 0 40px 80px -30px rgba(0,0,0,.35)); }
+.window-bar { height: 40px; display: flex; align-items: center; gap: 10px; justify-content: flex-end; padding: 0 12px; background: var(--cs-bar-bg, #14161a); color: var(--cs-bar-fg, #c4c9d2); }
+.window-bar[hidden], .window-bar [hidden] { display: none; }
+.window-bar .addr { flex: 1; min-width: 0; height: 26px; border-radius: 7px; background: rgba(255,255,255,.08); display: flex; align-items: center; gap: 8px; padding: 0 10px; font-family: var(--cs-mono, ui-monospace, Menlo, monospace); font-size: 12px; overflow: hidden; white-space: nowrap; }
+.window-bar .addr b { color: var(--cs-bar-strong, #fff); font-weight: 500; }
+.window-bar .addr span { overflow: hidden; text-overflow: ellipsis; }
+.window-bar a, .window-bar button { color: inherit; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 6px; background: none; border: 0; cursor: pointer; text-decoration: none; font-size: 17px; }
+.window-bar a:hover, .window-bar button:hover { background: rgba(255,255,255,.1); color: var(--cs-bar-strong, #fff); }
+.frame-holder { position: relative; overflow: hidden; }
+.frame-holder iframe { width: 1280px; height: 800px; border: 0; transform-origin: 0 0; display: block; background: #f5f6f8; }
+
+/* Narrow screens: the stage goes, and the inline copy the project placed in a chapter shows instead */
+.inline-prototype { display: none; }
+@media (max-width: 1020px) {
+  .story[data-device="phone"] { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .story[data-device="phone"] .stage { display: none; }
+  .story[data-device="phone"] .inline-prototype { display: flex; flex-direction: column; align-items: center; margin: 32px 0 0; }
+}
+@media (max-width: 1100px) {
+  .story[data-device="desktop"] { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .story[data-device="desktop"] .stage { display: none; }
+  .story[data-device="desktop"] .inline-prototype { display: block; margin: 28px 0 0; }
+}

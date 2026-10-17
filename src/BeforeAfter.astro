@@ -1,0 +1,9 @@
+---
+// a before/after pair for a flow chapter. The labels default to "Before" and "After".
+interface Props { before: string; after: string; beforeLabel?: string; afterLabel?: string }
+const { before, after, beforeLabel = 'Before', afterLabel = 'After' } = Astro.props;
+---
+<div class="before-after">
+  <div class="b"><small>{beforeLabel}</small>{before}</div>
+  <div class="a"><small>{afterLabel}</small>{after}</div>
+</div>

@@ -1,76 +1,136 @@
 ---
 // the chapters column plus the sticky Prototype that follows the reader.
-// Any element inside with [data-goto] drives the Prototype when it reaches mid-viewport;
-// any .try[data-goto] button re-drives it on click.
+// Any section.chapter[data-goto] inside drives the Prototype when it becomes active; any .try button re-drives it on
+// click. `device` picks the frame, the column proportions and when a chapter becomes active.
 import PrototypeFrame from './PrototypeFrame.astro';
+import './story.css';
 interface Props {
   prototype: string; // URL of the standalone Prototype page
-  messageType: string; // e.g. "renigo:goto"; the Prototype listens for it
+  project: string; // e.g. "renigo": messages are "renigo:goto", "renigo:ready", "renigo:status"
   title: string; // iframe title
+  device?: 'phone' | 'desktop';
+  host?: string; // desktop only: shown before the address in the title bar
   caption?: string;
 }
-const { prototype, messageType, title, caption = "Live prototype. Tap around, it's interactive." } = Astro.props;
+const { prototype, project, title, device = 'phone', host } = Astro.props;
+const caption = Astro.props.caption ?? (device === 'phone' ? "Live prototype. Tap around, it's interactive." : "Live prototype. Click around, it's interactive.");
 ---
-<main class="wrap story" data-message-type={messageType}>
+<main class="wrap story" data-project={project} data-device={device}>
   <div class="chapters">
     <slot />
   </div>
   <aside class="stage" aria-label="Live prototype">
-    <PrototypeFrame src={prototype} title={title} sticky />
+    <PrototypeFrame src={prototype} title={title} device={device} host={host} sticky />
     <div class="stage-caption"><span class="live"></span> {caption}</div>
   </aside>
 </main>
 
 <script>
   const story = document.querySelector<HTMLElement>('main.story')!;
-  const type = story.dataset.messageType;
-  const frame = document.getElementById('proto') as HTMLIFrameElement;
-  const holder = document.getElementById('phoneHolder')!;
+  const { project, device } = story.dataset;
+  const stage = story.querySelector<HTMLElement>('.stage')!;
+  const frame = stage.querySelector('iframe')!;
+  const inline = story.querySelector<HTMLIFrameElement>('.inline-prototype iframe');
+  const chapters = [...story.querySelectorAll<HTMLElement>('section.chapter[data-goto]')];
   let last = '';
+
+  const post = (target: HTMLIFrameElement | null, payload: object) =>
+    target?.contentWindow?.postMessage({ type: `${project}:goto`, ...payload }, '*');
 
   function goto(json?: string) {
     if (!json || json === last) return;
     last = json;
-    frame.contentWindow?.postMessage({ type, ...JSON.parse(json) }, '*');
+    post(frame, JSON.parse(json));
   }
 
-  // Scale the sticky phone to fit the viewport height
-  function fit() {
+  // Replay the active chapter (or the first, before any is active) once the Prototype can hear it.
+  function replay() { const j = last || chapters[0]?.dataset.goto; last = ''; goto(j); }
+
+  // Scale the sticky frame to fit the stage, and the inline one to the column width so it never overflows
+  function fitPhone() {
+    const holder = stage.querySelector<HTMLElement>('.phone-holder')!;
     // The phone itself is 844px tall inside a 940px frame that leaves room for its shadow
     const s = Math.min(1, (window.innerHeight - 64 - 40) / 900);
     holder.style.transform = `scale(${s})`;
     holder.style.margin = `${-(940 * (1 - s)) / 2}px ${-(480 * (1 - s)) / 2}px`;
+
+    const inlineHolder = story.querySelector<HTMLElement>('.inline-prototype .phone-holder');
+    const cw = inlineHolder?.parentElement!.clientWidth;
+    if (!inlineHolder || !cw) return;
+    const t = Math.min(.85, cw / 480);
+    inlineHolder.style.transform = `scale(${t})`;
+    inlineHolder.style.margin = `${-(940 * (1 - t)) / 2}px ${-(480 * (1 - t)) / 2}px`;
   }
+  function fitDesktop() {
+    const win = stage.querySelector<HTMLElement>('.window')!;
+    const holder = win.querySelector<HTMLElement>('.frame-holder')!;
+    // A 1280×800 app; leave room for the nav, the stage's padding, the title bar and the caption
+    const w = stage.clientWidth;
+    if (w) {
+      const s = Math.min(1, w / 1280, (innerHeight - 64 - 88 - 24 - 40 - 50) / 800);
+      frame.style.transform = `scale(${s})`;
+      holder.style.width = win.style.width = `${1280 * s}px`;
+      holder.style.height = `${800 * s}px`;
+    }
+
+    const inlineHolder = inline?.parentElement;
+    const cw = inlineHolder?.parentElement!.clientWidth;
+    if (!inline || !inlineHolder || !cw) return;
+    inline.style.transform = `scale(${cw / 1280})`;
+    inlineHolder.style.height = `${800 * cw / 1280}px`;
+  }
+  const fit = device === 'desktop' ? fitDesktop : fitPhone;
   fit(); addEventListener('resize', fit);
 
-  // Scale the inline phone (narrow screens) to the column width so it never overflows
-  const inlineHolder = document.querySelector<HTMLElement>('.inline-phone .phone-holder');
-  function fitInline() {
-    if (!inlineHolder) return;
-    const cw = inlineHolder.parentElement!.clientWidth;
-    if (!cw) return;
-    const s = Math.min(.85, cw / 480);
-    inlineHolder.style.transform = `scale(${s})`;
-    inlineHolder.style.margin = `${-(940 * (1 - s)) / 2}px ${-(480 * (1 - s)) / 2}px`;
-  }
-  fitInline(); addEventListener('resize', fitInline);
-
-  // Drive the phone from whichever chapter sits in the middle of the viewport
+  // Drive the Prototype from the active chapter: mid-viewport for a phone's short chapters, and for a desktop's long
+  // ones once the chapter's top reaches the upper third, so it changes once a reader is into the new chapter.
+  const rootMargin = device === 'desktop' ? '-30% 0px -69% 0px' : '-45% 0px -45% 0px';
   const io = new IntersectionObserver(entries => {
     entries.forEach(e => { if (e.isIntersecting) goto((e.target as HTMLElement).dataset.goto); });
-  }, { rootMargin: '-45% 0px -45% 0px' });
-  story.querySelectorAll('section.chapter[data-goto]').forEach(s => io.observe(s));
-  // If the iframe finishes loading after a chapter is already active, replay it
-  frame.addEventListener('load', () => { const j = last; last = ''; goto(j); });
+  }, { rootMargin });
+  chapters.forEach(s => io.observe(s));
 
-  // "Try it" buttons always re-trigger, even if the chapter is already active
+  // A Prototype that announces `<project>:ready` is replayed then; otherwise once its iframe has loaded
+  let announced = false;
+  frame.addEventListener('load', () => setTimeout(() => { if (!announced) replay(); }, 250));
+
+  // `<project>:status` fills that frame's title bar: the address (or a title), the full-screen link and the theme
+  const themeBtn = stage.querySelector<HTMLButtonElement>('.theme-btn');
+  addEventListener('message', e => {
+    const m = e.data;
+    if (!m || typeof m !== 'object') return;
+    const from = e.source === frame.contentWindow ? frame : inline && e.source === inline.contentWindow ? inline : null;
+    if (!from) return;
+    if (m.type === `${project}:ready` && from === frame) { announced = true; replay(); }
+    if (m.type !== `${project}:status`) return;
+    const win = from.closest('.window');
+    if (!win) return;
+    const text = m.url ?? m.title;
+    win.querySelector<HTMLElement>('.addr-text')!.textContent = text ?? '';
+    win.querySelector<HTMLElement>(from === frame ? '.addr' : '.window-bar')!.hidden = !text;
+    if (from !== frame) return;
+    win.querySelector<HTMLAnchorElement>('.full')!.href = m.href ?? frame.getAttribute('src')!;
+    if (themeBtn) {
+      themeBtn.hidden = !m.theme;
+      const next = m.theme === 'dark' ? 'light' : 'dark';
+      themeBtn.dataset.next = next;
+      themeBtn.innerHTML = `<i class="ti ti-${m.theme === 'dark' ? 'sun' : 'moon'}"></i>`;
+      themeBtn.setAttribute('aria-label', `Switch the prototype to the ${next} theme`);
+      themeBtn.title = 'Theme';
+    }
+  });
+  themeBtn?.addEventListener('click', () => post(frame, { theme: themeBtn.dataset.next }));
+
+  // Try buttons always re-trigger, even if the chapter is already active. Without their own goto they use their
+  // chapter's. On narrow screens they drive the inline copy and scroll to it.
   story.querySelectorAll<HTMLElement>('.try').forEach(b => b.addEventListener('click', () => {
+    const json = b.dataset.goto ?? b.closest<HTMLElement>('section.chapter')?.dataset.goto;
+    if (!json) return;
     last = '';
-    goto(b.dataset.goto);
-    if (getComputedStyle(story.querySelector('.stage')!).display === 'none') {
-      const inline = story.querySelector<HTMLIFrameElement>('.inline-phone iframe')!;
+    goto(json);
+    if (inline && getComputedStyle(stage).display === 'none') {
       inline.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      inline.contentWindow?.postMessage({ type, ...JSON.parse(b.dataset.goto!) }, '*');
+      post(inline, JSON.parse(json));
     }
   }));
 </script>

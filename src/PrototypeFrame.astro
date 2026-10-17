@@ -1,8 +1,34 @@
 ---
-// the phone-sized iframe. `sticky` is the one beside the chapters; otherwise it's the inline copy for narrow screens.
-interface Props { src: string; title: string; sticky?: boolean }
-const { src, title, sticky = false } = Astro.props;
+// the Prototype's iframe in its device frame. `sticky` is the one beside the chapters; otherwise it's the inline copy
+// for narrow screens, and anything in its slot shows (and hides) with it. A desktop frame has a title bar that Story
+// fills from the Prototype's `<project>:status`.
+interface Props { src: string; title: string; device?: 'phone' | 'desktop'; host?: string; sticky?: boolean }
+const { src, title, device = 'phone', host, sticky = false } = Astro.props;
+const loading = sticky ? undefined : 'lazy';
 ---
-{sticky
-  ? <div class="phone-holder" id="phoneHolder"><iframe id="proto" src={src} title={title}></iframe></div>
-  : <div class="inline-phone"><div class="phone-holder"><iframe src={src} title={title} loading="lazy"></iframe></div></div>}
+{device === 'phone'
+  ? (sticky
+    ? <div class="phone-holder"><iframe src={src} title={title}></iframe></div>
+    : <div class="inline-prototype"><div class="phone-holder"><iframe src={src} title={title} loading={loading}></iframe></div><slot /></div>)
+  : (sticky
+    ? (
+      <div class="window">
+        <div class="window-bar">
+          <div class="addr" title="The prototype’s current address" hidden><i class="ti ti-lock"></i><span>{host && <b>{host}</b>} <span class="addr-text"></span></span></div>
+          <button class="theme-btn" hidden><i class="ti ti-moon"></i></button>
+          <a class="full" href={src} target="_blank" rel="noopener" aria-label="Open the prototype full screen" title="Open full screen"><i class="ti ti-arrows-maximize"></i></a>
+        </div>
+        <div class="frame-holder"><iframe src={src} title={title}></iframe></div>
+      </div>
+    )
+    : (
+      <div class="inline-prototype">
+        <div class="window">
+          <div class="window-bar" hidden>
+            <div class="addr"><i class="ti ti-lock"></i><span>{host && <b>{host}</b>} <span class="addr-text"></span></span></div>
+          </div>
+          <div class="frame-holder"><iframe src={src} title={title} loading={loading}></iframe></div>
+        </div>
+        <slot />
+      </div>
+    ))}

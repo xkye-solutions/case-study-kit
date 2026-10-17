@@ -1,0 +1,9 @@
+---
+// the design decisions behind a flow, written as a Markdown list; each item gets a check.
+const html = await Astro.slots.render('default');
+const list = html
+  .replace('<ul>', '<ul class="decisions">')
+  .replaceAll('<li>', '<li><i class="ti ti-circle-check"></i><span>')
+  .replaceAll('</li>', '</span></li>');
+---
+<Fragment set:html={list} />
