@@ -1,5 +1,7 @@
 # @xkye/case-study-kit
 
+> **Read-only Mirror.** This is maintained in Xkye Solutions' private monorepo and split here with its history. Changes made here are overwritten, so please don't open issues or pull requests. Builds on [`brand`](https://github.com/xkye-solutions/brand), also a Mirror.
+
 The shared Astro kit every Case Study builds on. It owns the page shell, the scroll-synced story column, the embedded Prototype and the Xkye credit. The project owns everything that makes it look like itself.
 
 Renigo (`case-studies/renigo`) is the reference Case Study built on it.
