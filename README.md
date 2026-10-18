@@ -10,7 +10,7 @@ Renigo (`case-studies/renigo`) is the reference phone Case Study and Kova (`case
 
 | Export | What it is |
 | --- | --- |
-| `CaseStudy.astro` | The page shell: `<head>` with social preview tags and favicons, and a `<footer>` that always ends with the Xkye credit. Slots: default (the page), `head` (fonts, icon sets, a `noindex`), `footer` (anything before the credit). |
+| `CaseStudy.astro` | The page shell: `<head>` with social preview tags and favicons, and a `<footer>` that always ends with the Xkye credit. Slots: default (the page), `head` (fonts, icon sets, a `noindex`), `footer` (anything before the credit). `analyticsToken` (optional) adds the Cloudflare Web Analytics beacon. |
 | `Story.astro` | The chapters column beside a sticky Prototype. Drives the Prototype from the active chapter, wires every Try button, and fills the desktop title bar. `device` is `phone` (default) or `desktop`. |
 | `Chapter.astro` | One scroll-synced chapter. `goto` says where the Prototype goes while it's active. |
 | `FlowChapter.astro` | A Chapter rendered from a `flows` content-collection entry. |

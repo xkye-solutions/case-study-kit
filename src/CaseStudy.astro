@@ -10,8 +10,9 @@ interface Props {
   ogTitle?: string;
   ogDescription?: string;
   ogImage?: string; // path relative to site
+  analyticsToken?: string; // Cloudflare Web Analytics site token; no beacon without it
 }
-const { title, description, site, ogTitle = title, ogDescription = description, ogImage } = Astro.props;
+const { title, description, site, ogTitle = title, ogDescription = description, ogImage, analyticsToken } = Astro.props;
 // Montserrat is only for the credit, so load just the glyphs it uses.
 const creditFont = `https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600&text=${encodeURIComponent(creditText)}&display=swap`;
 ---
@@ -45,5 +46,6 @@ const creditFont = `https://fonts.googleapis.com/css2?family=Montserrat:wght@500
     <XkyeCredit />
   </div>
 </footer>
+{analyticsToken && <script is:inline type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={JSON.stringify({ token: analyticsToken })}></script>}
 </body>
 </html>
