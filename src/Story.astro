@@ -80,7 +80,11 @@ const caption = Astro.props.caption ?? (device === 'phone' ? "Live prototype. Ta
     inlineHolder.style.height = `${800 * cw / 1280}px`;
   }
   const fit = device === 'desktop' ? fitDesktop : fitPhone;
+  // Refit whenever either column changes size, not just on window resize: Safari runs this before the stylesheets
+  // apply, so the first fit measures an unstyled, full-width page.
   fit(); addEventListener('resize', fit);
+  const ro = new ResizeObserver(() => fit());
+  ro.observe(stage); ro.observe(story.querySelector('.chapters')!);
 
   // Drive the Prototype from the active chapter: mid-viewport for a phone's short chapters, and for a desktop's long
   // ones once the chapter's top reaches the upper third, so it changes once a reader is into the new chapter.
